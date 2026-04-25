@@ -57,15 +57,21 @@ jobs:
             -t ${{ env.REGISTRY }}/${{ env.APP_NAME }}:${{ steps.env.outputs.env }}-latest \
             .
 
+      - name: Download Trivy HTML Template
+        run: |
+          curl -sfL -o trivy-html.tpl \
+            https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+
       - name: Run Trivy Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.APP_NAME }}:${{ steps.tag.outputs.tag }}
-          format: template
-          template: "@/contrib/html.tpl"
-          output: trivy-report.html
           severity: HIGH,CRITICAL
+          vuln-type: os,library
           exit-code: '0'
+          format: template
+          template: '@trivy-html.tpl'
+          output: trivy-report.html
           ignore-unfixed: true
 
       - name: Upload Trivy Report
